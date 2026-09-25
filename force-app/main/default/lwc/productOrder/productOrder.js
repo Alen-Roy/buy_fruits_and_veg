@@ -153,14 +153,12 @@ export default class ProductOrder extends LightningElement {
         }
 
         const items = this.cartItems.map((item) => ({
-    productId: item.productId,
-    quantity: item.quantity,
-    price: item.price
-}));
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price
+        }));
 
-console.log('Items being sent:', JSON.stringify(items));
-
-createOrder({ customerName: this.customerName, items: items })
+        createOrder({ customerName: this.customerName, items: items })
             .then((result) => {
                 this.confirmedOrderNumber = result;
                 this.currentView = 'confirmation';

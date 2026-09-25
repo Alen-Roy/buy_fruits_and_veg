@@ -11,6 +11,20 @@ public with sharing class ProductOrderController {
 
     @AuraEnabled
     public static String createOrder(String customerName, List<OrderItemWrapper> items) {
+        System.debug('createOrder payload: ' + JSON.serialize(items));
+
+        if (items == null || items.isEmpty()) {
+            throwAuraError('No order items received. Please refresh the page and try again.');
+        }
+        for (OrderItemWrapper item : items) {
+            if (item == null || item.productId == null || item.quantity == null || item.price == null) {
+                throwAuraError(
+                    'Invalid order item payload: ' + JSON.serialize(item) +
+                    '. Please refresh the page and try again.'
+                );
+            }
+        }
+
         Order__c newOrder = new Order__c(
             Customer_Name__c = customerName,
             Order_Date__c = Date.today(),
@@ -30,6 +44,12 @@ public with sharing class ProductOrderController {
         insert lineItems;
 
         return newOrder.Name;
+    }
+
+    private static void throwAuraError(String message) {
+        AuraHandledException e = new AuraHandledException(message);
+        e.setMessage(message);
+        throw e;
     }
 
     public class OrderItemWrapper {
