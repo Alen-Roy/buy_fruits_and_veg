@@ -53,8 +53,8 @@ public with sharing class ProductOrderController {
     }
 
     public class OrderItemWrapper {
-        @AuraEnabled public Id productId;
-        @AuraEnabled public Decimal quantity;
-        @AuraEnabled public Decimal price;
+        @AuraEnabled public Id productId { get; set; }
+        @AuraEnabled public Decimal quantity { get; set; }
+        @AuraEnabled public Decimal price { get; set; }
     }
 }
