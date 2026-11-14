@@ -1,59 +1,54 @@
 <template>
-
-    <lightning-card title="Buy Fruits & Veg" icon-name="custom:custom63">
+    
+    <lightning-card title="Buy Fruits &amp; Veg" icon-name="custom:custom63">
 
         <template lwc:if={isConfirmation}>
             <div class="confirmation-screen slds-p-around_large">
                 <div class="confirmation-icon">✓</div>
                 <h2 class="confirmation-title">Thank you!</h2>
                 <p class="confirmation-text">Your order <strong>{confirmedOrderNumber}</strong> has been placed.</p>
-                <p if:true={confirmationSummary} class="confirmation-summary">{confirmationSummary}</p>
                 <lightning-button variant="brand" label="Continue shopping" onclick={handleContinueShopping}></lightning-button>
             </div>
         </template>
 
         <template lwc:elseif={isCartView}>
             <div class="cart-header slds-p-horizontal_medium slds-p-top_small">
-                <lightning-button label="< Back to shopping" onclick={handleBackToShopping}></lightning-button>
-                <lightning-button label="Clear cart" onclick={handleClearCart} class="slds-m-left_small"></lightning-button>
+                <lightning-button label="&lt; Back to shopping" onclick={handleBackToShopping}></lightning-button>
             </div>
 
             <template lwc:if={isCartEmpty}>
-                <div class="state-panel">
-                    <p class="state-title">Your cart is empty.</p>
-                    <lightning-button variant="brand" label="Browse products" onclick={handleBackToShopping}></lightning-button>
-                </div>
+                <p class="slds-p-around_medium">Your cart is empty.</p>
             </template>
             <template lwc:else>
                 <div class="cart-list slds-p-horizontal_medium">
-                    <template for:each={cartRows} for:item="item">
+                    <template for:each={cartItems} for:item="item">
                         <div key={item.productId} class="cart-row">
                             <img src={item.imageUrl} alt={item.name} class="cart-thumb" />
                             <div class="cart-info">
                                 <div class="cart-name">{item.name}</div>
-                                <div class="cart-price">{item.priceLabel} each</div>
+                                <div class="cart-price">₹{item.price} each</div>
                             </div>
                             <div class="cart-qty">
-                                <lightning-button-icon icon-name="utility:dash" data-id={item.productId} aria-label="Decrease quantity" onclick={handleDecrement}></lightning-button-icon>
+                                <lightning-button-icon icon-name="utility:dash" data-id={item.productId} onclick={handleDecrement}></lightning-button-icon>
                                 <span class="qty-value">{item.quantity}</span>
-                                <lightning-button-icon icon-name="utility:add" data-id={item.productId} aria-label="Increase quantity" onclick={handleIncrement}></lightning-button-icon>
+                                <lightning-button-icon icon-name="utility:add" data-id={item.productId} onclick={handleIncrement}></lightning-button-icon>
                             </div>
-                            <div class="cart-subtotal">{item.subtotalLabel}</div>
-                            <lightning-button-icon icon-name="utility:close" data-id={item.productId} aria-label="Remove item" onclick={handleRemove}></lightning-button-icon>
+                            <div class="cart-subtotal">₹{item.subtotal}</div>
+                            <lightning-button-icon icon-name="utility:close" data-id={item.productId} onclick={handleRemove}></lightning-button-icon>
                         </div>
                     </template>
                 </div>
 
                 <div class="cart-total slds-p-around_medium">
-                    <strong>Total: {cartTotalLabel}</strong>
+                    <strong>Total: ₹{cartTotal}</strong>
                 </div>
 
                 <div class="slds-p-horizontal_medium">
-                    <lightning-input label="Your name" value={customerName} maxlength="80" onchange={handleNameChange}></lightning-input>
+                    <lightning-input label="Your name" value={customerName} onchange={handleNameChange}></lightning-input>
                 </div>
 
                 <div class="slds-p-around_medium">
-                    <lightning-button variant="brand" label={placeOrderLabel} disabled={placeOrderDisabled} onclick={handlePlaceOrder}></lightning-button>
+                    <lightning-button variant="brand" label="Place order" onclick={handlePlaceOrder}></lightning-button>
                 </div>
             </template>
         </template>
@@ -68,54 +63,21 @@
             </div>
 
             <div class="filter-bar slds-p-horizontal_medium">
-                <template for:each={categoryOptions} for:item="cat">
-                    <lightning-button key={cat.value} label={cat.label} variant={cat.variant} data-category={cat.value} onclick={handleCategoryFilter}></lightning-button>
-                </template>
+                <lightning-button label="All" variant={allButtonVariant} data-category="All" onclick={handleCategoryFilter}></lightning-button>
+                <lightning-button label="Fruits" variant={fruitButtonVariant} data-category="Fruit" onclick={handleCategoryFilter}></lightning-button>
+                <lightning-button label="Vegetables" variant={vegButtonVariant} data-category="Vegetable" onclick={handleCategoryFilter}></lightning-button>
             </div>
 
-            <template lwc:if={isLoading}>
-                <div class="product-grid" aria-hidden="true">
-                    <template for:each={skeletonCards} for:item="card">
-                        <div key={card.key} class="product-card skeleton-card">
-                            <div class="skeleton-img skeleton-shimmer"></div>
-                            <div class="skeleton-line skeleton-shimmer"></div>
-                            <div class="skeleton-line skeleton-short skeleton-shimmer"></div>
-                            <div class="skeleton-btn skeleton-shimmer"></div>
-                        </div>
-                    </template>
-                </div>
-            </template>
-
-            <template lwc:elseif={loadError}>
-                <div class="state-panel">
-                    <p class="state-title">We couldn't load products.</p>
-                    <p class="state-sub">Please check your connection and try again.</p>
-                    <lightning-button variant="brand" label="Retry" onclick={handleRetryProducts}></lightning-button>
-                </div>
-            </template>
-
-            <template lwc:elseif={showEmptyProducts}>
-                <div class="state-panel">
-                    <p class="state-title">No products found</p>
-                    <p class="state-sub">Try a different search or clear your filters.</p>
-                    <lightning-button label="Clear filters" onclick={handleClearFilters}></lightning-button>
-                </div>
-            </template>
-
-            <template lwc:else>
-                <div class="product-grid">
-                    <template for:each={productCards} for:item="product">
-                        <div key={product.Id} class="product-card">
-                            <img src={product.Image_URL__c} alt={product.Name} class="product-image" />
-                            <span class="product-category">{product.Category__c}</span>
-                            <div class="product-name">{product.Name}</div>
-                            <p class="product-desc">{product.Description__c}</p>
-                            <div class="product-price">{product.priceLabel}</div>
-                            <lightning-button label="Add to cart" data-id={product.Id} onclick={handleAddToCart}></lightning-button>
-                        </div>
-                    </template>
-                </div>
-            </template>
+            <div class="product-grid">
+                <template for:each={filteredProducts} for:item="product">
+                    <div key={product.Id} class="product-card">
+                        <img src={product.Image_URL__c} alt={product.Name} class="product-image" />
+                        <div class="product-name">{product.Name}</div>
+                        <div class="product-price">₹{product.Price__c}</div>
+                        <lightning-button label="Add to cart" data-id={product.Id} onclick={handleAddToCart}></lightning-button>
+                    </div>
+                </template>
+            </div>
         </template>
 
     </lightning-card>
